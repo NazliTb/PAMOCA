@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PAMOCA
 {
-    internal class Motion
+    class Motion
     {
+
         List<Frame> listFrames = new List<Frame>();
         List<Joint> listJoints = new List<Joint>();
 
         int nbFrames;
         float frameTime;
+
+        Joint rootJoint;
 
         public int getNbFrames()
         {
@@ -22,6 +22,16 @@ namespace PAMOCA
         public void setNbFrames(int nbFrames)
         {
             this.nbFrames = nbFrames;
+        }
+
+        public Joint getRootJoint()
+        {
+            return this.rootJoint;
+        }
+
+        public void setRootJoint(Joint rootJoint)
+        {
+            this.rootJoint = rootJoint;
         }
 
         public float getFrameTime()
@@ -60,7 +70,7 @@ namespace PAMOCA
         public String[] importFile()
         {
 
-            String[] file = System.IO.File.ReadAllLines(@"C:\Users\nazli\Documents\GitHub\PAMOCA\Fichiers 3D\Waving_4_Take_001.bvh");
+            String[] file = System.IO.File.ReadAllLines(@"C:\Users\nazli\Documents\GitHub\PAMOCA\Fichiers 3D\testWaving_4_Take_001.bvh");
 
             return file;
         }

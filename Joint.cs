@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PAMOCA
 {
-    internal class Joint
+    class Joint
     {
 
-        float[] dataPoint = new float[3];
+        List<float> dataPoint = new List<float>();
         List<float> channelsPoints = new List<float>();
 
         //float[] dataPoint;
@@ -17,12 +14,12 @@ namespace PAMOCA
         String jointName;
 
 
-        public float[] getDataPoint()
+        public List<float> getDataPoint()
         {
             return this.dataPoint;
         }
 
-        public void setDataPoint(float[] dataPoint)
+        public void setDataPoint(List<float> dataPoint)
         {
             this.dataPoint = dataPoint;
         }
@@ -46,6 +43,10 @@ namespace PAMOCA
         {
             this.jointName = jointName;
         }
+
+
+
+
 
         public List<Joint> getListInnerJoints()
         {

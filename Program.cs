@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-
+using System.IO;
 
 namespace PAMOCA
 {
@@ -15,14 +15,16 @@ namespace PAMOCA
             fileLines = motion.importFile();
 
             /*   List<Joint> listJoints = new List<Joint>();
-               listJoints = jointsFunction(fileLines);
-               motion.setListJoints(listJoints); */
+             listJoints = jointsFunction(fileLines);
+              motion.setListJoints(listJoints);*/
 
+            Joint rootJoint = new Joint();
+            rootJoint = jointsFunction(fileLines);
+            motion.setRootJoint(rootJoint);
 
             List<Frame> listFrames = new List<Frame>();
             listFrames = framesFunction(fileLines);
             motion.setListFrames(listFrames);
-
 
             foreach (String line in fileLines)
             {
@@ -40,24 +42,26 @@ namespace PAMOCA
             }
 
             Console.WriteLine(motion);
+            export(motion);
+
+
 
 
         }
 
-        static List<Joint> jointsFunction(String[] fileLines)
+        static Joint jointsFunction(String[] fileLines)
         {
             //Console.WriteLine("Hello World!");
-
-
+            var rootJoint = new Joint();
             List<Joint> listOpenJoints = new List<Joint>();
             int countOffset = 0;
             int countLine = 0;
             int oppenedJoints = 0;
             int closedJoints = 0;
 
-
             foreach (String line in fileLines)
             {
+
 
                 countLine = countLine + 1;
                 // Console.WriteLine(test);
@@ -77,18 +81,30 @@ namespace PAMOCA
                     countOffset = countOffset + 1;
                     if (countOffset == 1)
                     {
+                        List<float> dataPoint = new List<float>();
+
+                        String[] words = line.TrimStart(' ').Split(' ');
+
+
+                        dataPoint.Add(float.Parse(words[1], CultureInfo.InvariantCulture.NumberFormat));
+                        dataPoint.Add(float.Parse(words[2], CultureInfo.InvariantCulture.NumberFormat));
+                        dataPoint.Add(float.Parse(words[3], CultureInfo.InvariantCulture.NumberFormat));
+
+                        rootJoint.setDataPoint(dataPoint);
+                        rootJoint.setJointName("Hips");
                         continue;
                     }
                     else
                     {
                         var joint = listOpenJoints[listOpenJoints.Count - 1];
-                        float[] dataPoint = new float[3];
+
+                        List<float> dataPoint = new List<float>();
                         String[] words = line.TrimStart(' ').Split(' ');
 
-                        dataPoint[0] = float.Parse(words[1], CultureInfo.InvariantCulture.NumberFormat);
-                        dataPoint[1] = float.Parse(words[2], CultureInfo.InvariantCulture.NumberFormat);
-                        dataPoint[2] = float.Parse(words[3], CultureInfo.InvariantCulture.NumberFormat);
 
+                        dataPoint.Add(float.Parse(words[1], CultureInfo.InvariantCulture.NumberFormat));
+                        dataPoint.Add(float.Parse(words[2], CultureInfo.InvariantCulture.NumberFormat));
+                        dataPoint.Add(float.Parse(words[3], CultureInfo.InvariantCulture.NumberFormat));
 
                         joint.setDataPoint(dataPoint);
                     }
@@ -99,7 +115,7 @@ namespace PAMOCA
                 {
                     var joint = new Joint();
 
-                    joint.setJointName("End site");
+                    joint.setJointName("End Site");
                     listOpenJoints.Add(joint);
 
                 }
@@ -123,65 +139,14 @@ namespace PAMOCA
             }
 
             Console.WriteLine(listOpenJoints.Count);
-            return listOpenJoints;
+
+
+
+
+
+            rootJoint.setListInnerJoints(listOpenJoints);
+            return rootJoint;
         }
-
-        /*static List<Frame> framesFunction(String[] fileLines)
-        {
-
-            List<Frame> listFrames = new List<Frame>();
-            Boolean framesFound = false;
-            foreach (String line in fileLines)
-            {  
-                
-                if (line.Contains("Frame Time:"))
-                {                
-                  
-                   framesFound = true;
-                    continue;
-                }
-                Console.WriteLine(framesFound);
-                if (framesFound == true)
-                {
-       
-
-                    var frame = new Frame();
-                    //Frame frame = new Frame();
-
-                    String[] lineParts = line.Split(' ');
-         
-
-                    List<float[]> positionRotation = new List<float[]>();
-                    List<float[]> joints = new List<float[]>();
-       
-                    for (int i = 0; i < lineParts.Length-2; i++)
-                    {
-                        float[] listOffsets = new float[3];
-                       
-                        listOffsets[0] = float.Parse(lineParts[i], CultureInfo.InvariantCulture.NumberFormat);
-                        listOffsets[1] = float.Parse(lineParts[i + 1], CultureInfo.InvariantCulture.NumberFormat);
-                        listOffsets[2] = float.Parse(lineParts[i + 2], CultureInfo.InvariantCulture.NumberFormat);
-                        joints.Add(listOffsets);
-
-                        float[] listPositionRotation = new float[3];
-                        listPositionRotation[0] = float.Parse(lineParts[i + 3], CultureInfo.InvariantCulture.NumberFormat);
-                        listPositionRotation[1] = float.Parse(lineParts[i + 4], CultureInfo.InvariantCulture.NumberFormat);
-                        listPositionRotation[2] = float.Parse(lineParts[i + 5], CultureInfo.InvariantCulture.NumberFormat);
-                        positionRotation.Add(listPositionRotation);
-
-                        i = i + 6;
-                    }
-
-                    frame.setJoints(joints);
-                    frame.setPositionRotation(positionRotation);
-                    listFrames.Add(frame);
-                }
-
-            }
-
-            return listFrames;
-
-        }  */
 
         static List<Frame> framesFunction(String[] fileLines)
         {
@@ -236,7 +201,6 @@ namespace PAMOCA
             foreach (String line in fileLines)
             {
 
-
                 countLine = countLine + 1;
                 // Console.WriteLine(test);
 
@@ -246,7 +210,6 @@ namespace PAMOCA
                     var joint = new Joint();
                     joint.setJointName(line.TrimStart(' ').Split(' ')[1]);
                     listOpenJoints.Add(joint);
-
                 }
 
                 if (line.Contains("OFFSET"))
@@ -261,27 +224,32 @@ namespace PAMOCA
                     {
                         var joint = listOpenJoints[listOpenJoints.Count - 1];
 
-
-
-                      
-
-
-                        float[] dataPoint = new float[3];
+                        List<float> dataPoint = new List<float>();
+                        List<float> channelsPoints = new List<float>();
                         String[] words = line.TrimStart(' ').Split(' ');
-                        dataPoint[0] = float.Parse(words[1], CultureInfo.InvariantCulture.NumberFormat);
-                        dataPoint[1] = float.Parse(words[2], CultureInfo.InvariantCulture.NumberFormat);
-                        dataPoint[2] = float.Parse(words[3], CultureInfo.InvariantCulture.NumberFormat);
+
+                        dataPoint.Add(float.Parse(words[1], CultureInfo.InvariantCulture.NumberFormat));
+                        dataPoint.Add(float.Parse(words[2], CultureInfo.InvariantCulture.NumberFormat));
+                        dataPoint.Add(float.Parse(words[3], CultureInfo.InvariantCulture.NumberFormat));
                         joint.setDataPoint(dataPoint);
 
-
-                        List<float> channelsPoints = new List<float>();
                         channelsPoints.Add(float.Parse(lineParts[positionInFrame], CultureInfo.InvariantCulture.NumberFormat));
                         channelsPoints.Add(float.Parse(lineParts[positionInFrame + 1], CultureInfo.InvariantCulture.NumberFormat));
                         channelsPoints.Add(float.Parse(lineParts[positionInFrame + 2], CultureInfo.InvariantCulture.NumberFormat));
                         channelsPoints.Add(float.Parse(lineParts[positionInFrame + 3], CultureInfo.InvariantCulture.NumberFormat));
                         channelsPoints.Add(float.Parse(lineParts[positionInFrame + 4], CultureInfo.InvariantCulture.NumberFormat));
                         channelsPoints.Add(float.Parse(lineParts[positionInFrame + 5], CultureInfo.InvariantCulture.NumberFormat));
+                        Console.WriteLine("***************************");
+                        Console.WriteLine(lineParts[positionInFrame]);
+                        Console.WriteLine(lineParts[positionInFrame] + 1);
+                        Console.WriteLine(lineParts[positionInFrame + 2]);
+                        Console.WriteLine(lineParts[positionInFrame + 3]);
+                        Console.WriteLine(lineParts[positionInFrame + 4]);
+                        Console.WriteLine(lineParts[positionInFrame + 5]);
+                        Console.WriteLine("***************************");
                         joint.setChannelsPoints(channelsPoints);
+
+
                     }
 
                 }
@@ -290,7 +258,7 @@ namespace PAMOCA
                 {
                     var joint = new Joint();
 
-                    joint.setJointName("End site");
+                    joint.setJointName("End Site");
                     listOpenJoints.Add(joint);
 
                 }
@@ -312,9 +280,184 @@ namespace PAMOCA
                     }
                 }
             }
+
             Console.WriteLine(listOpenJoints.Count);
             return listOpenJoints;
+
+
         }
 
+        static void export(Motion objMotion)
+        {
+            Console.WriteLine("----------------------------- exporting ----------------------- ");
+
+            string path = @"C:\Users\nazli\Documents\GitHub\PAMOCA\exports\file.bvh";
+            if (!File.Exists(path))
+            {
+                // Create a file to write to.
+                using (StreamWriter sw = File.CreateText(path))
+                {
+                    sw.WriteLine("HIERARCHY");
+                    /*      sw.WriteLine("Root " + objMotion.getRootJoint().getJointName());
+                          sw.WriteLine("{");
+                          sw.WriteLine("OFFSET " + objMotion.getRootJoint().getDataPoint()[0] + " " + objMotion.getRootJoint().getDataPoint()[1] + " " +
+                                       objMotion.getRootJoint().getDataPoint()[2]); */
+                    List<Joint> jointsList = new List<Joint>();
+                    List<int> nbChilds = new List<int>();
+                    recur(objMotion.getRootJoint(), jointsList, nbChilds);
+
+                    List<int> levels = defineLevels(nbChilds);
+
+
+                    for (int i = 0; i < levels.Count; i++)
+                    {
+                        int level = levels[i];
+
+                        //  sw.WriteLine(" i = " + i);
+                        String spaces = makeSpaces(level);
+                        Joint currentJoin = jointsList[i];
+                        if (i == 0)
+                        {
+                            sw.WriteLine("ROOT " + currentJoin.getJointName());
+                            sw.WriteLine("{");
+                            sw.WriteLine(spaces + "  OFFSET " + currentJoin.getDataPoint()[0].ToString(System.Globalization.CultureInfo.InvariantCulture).ToLower() + " " + currentJoin.getDataPoint()[1].ToString(System.Globalization.CultureInfo.InvariantCulture).ToLower() + " " +
+                                         currentJoin.getDataPoint()[2].ToString(System.Globalization.CultureInfo.InvariantCulture).ToLower());
+                            sw.WriteLine(spaces + "  CHANNELS 6 Xposition Yposition Zposition Zrotation Xrotation Yrotation");
+
+
+                        }
+                        else
+                        {
+                            if (currentJoin.getJointName() != "End Site")
+                            {
+
+                                sw.WriteLine(spaces + "JOINT " + currentJoin.getJointName());
+                                sw.WriteLine(spaces + "{");
+                                sw.WriteLine(spaces + "  OFFSET " + currentJoin.getDataPoint()[0].ToString(System.Globalization.CultureInfo.InvariantCulture).ToLower() + " " + currentJoin.getDataPoint()[1].ToString(System.Globalization.CultureInfo.InvariantCulture).ToLower() + " " +
+                                             currentJoin.getDataPoint()[2].ToString(System.Globalization.CultureInfo.InvariantCulture).ToLower());
+                                sw.WriteLine(spaces + "  CHANNELS 6 Xposition Yposition Zposition Zrotation Xrotation Yrotation");
+                            }
+                            else
+                            {
+                                // sw.WriteLine(spaces + "CHANNELS 6 Xposition Yposition Zposition Zrotation Xrotation Yrotation");
+                                sw.WriteLine(spaces + currentJoin.getJointName());
+                                sw.WriteLine(spaces + "{");
+                                sw.WriteLine(spaces + "  OFFSET " + currentJoin.getDataPoint()[0].ToString(System.Globalization.CultureInfo.InvariantCulture).ToLower() + " " + currentJoin.getDataPoint()[1].ToString(System.Globalization.CultureInfo.InvariantCulture).ToLower() + " " +
+                                             currentJoin.getDataPoint()[2].ToString(System.Globalization.CultureInfo.InvariantCulture).ToLower());
+                                sw.WriteLine(spaces + "}");
+                                if (i != levels.Count - 1)
+                                {
+                                    int nbClosers = level - levels[i + 1];
+                                    for (int k = 0; k < nbClosers; k++)
+                                    {
+                                        spaces = makeSpaces(level - k - 1);
+                                        sw.WriteLine(spaces + "}");
+                                    }
+
+                                    //  sw.WriteLine("closings here = " + nbClosers);
+                                }
+                                else
+                                {
+                                    for (int k = 0; k < level; k++)
+                                    {
+                                        spaces = makeSpaces(level - k - 1);
+                                        sw.WriteLine(spaces + "}");
+                                    }
+                                }
+
+
+                            }
+
+                        }
+
+                    }
+
+                    sw.WriteLine("MOTION");
+                    sw.WriteLine("Frames:	" + objMotion.getNbFrames());
+                    sw.WriteLine("Frame Time: " + objMotion.getFrameTime().ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+                    for (int i = 0; i < objMotion.getListFrames().Count; i++)
+                    {
+                        String frame = "";
+                        List<Joint> jointsListByFrame = new List<Joint>();
+                        recur(objMotion.getListFrames()[i].getRootJoint(), jointsListByFrame, nbChilds);
+                        for (int j = 1; j < jointsListByFrame.Count; j++)
+                        {
+                            for (int k = 0; k < 6; k++)
+                            {
+                                Console.WriteLine(" i =  " + i + " j = " + j + " k = " + k);
+                                Console.WriteLine(jointsListByFrame[j].getChannelsPoints()[k].ToString(System.Globalization.CultureInfo.InvariantCulture));
+                                frame = frame + jointsListByFrame[j].getChannelsPoints()[k].ToString(System.Globalization.CultureInfo.InvariantCulture) + " ";
+
+                            }
+
+                        }
+                        sw.WriteLine(frame);
+                        //objMotion.getListFrames()[0].getRootJoint().getListInnerJoints()[0].getChannelsPoints
+
+                    }
+
+
+                }
+            }
+
+            // Open the file to read from.
+            /*   using (StreamReader sr = File.OpenText(path))
+               {
+                   string s = "";
+                   while ((s = sr.ReadLine()) != null)
+                   {
+                       Console.WriteLine(s);
+                   }
+               } */
+        }
+
+        static void recur(Joint joint, List<Joint> jointsList, List<int> nbChilds)
+        {
+            // Console.WriteLine(joint.getJointName());
+            jointsList.Add(joint);
+            nbChilds.Add(joint.getListInnerJoints().Count);
+
+            for (int i = 0; i < joint.getListInnerJoints().Count; i++)
+            {
+                // Console.WriteLine(joint.getListInnerJoints()[i].getJointName());
+                recur(joint.getListInnerJoints()[i], jointsList, nbChilds);
+            }
+        }
+
+        static String makeSpaces(int nb)
+        {
+            String spaces = "";
+            for (int i = 0; i < nb; i++)
+            {
+                spaces = spaces + "  ";
+            }
+
+            return spaces;
+        }
+
+        static List<int> defineLevels(List<int> nbChilds)
+        {
+            List<int> levels = new List<int>();
+            List<int> nbCounted = new List<int>();
+            levels.Add(0);
+            nbCounted.Add(0);
+            for (int i = 1; i < nbChilds.Count; i++)
+            {
+                int j = i - 1;
+                while (nbCounted[j] >= nbChilds[j])
+                {
+                    j--;
+
+                }
+
+                nbCounted[j] = nbCounted[j] + 1;
+                levels.Add(levels[j] + 1);
+                nbCounted.Add(0);
+
+
+            }
+            return levels;
+        }
     }
 }
