@@ -70,7 +70,7 @@ namespace PAMOCA
         public String[] importFile()
         {
 
-            String[] file = System.IO.File.ReadAllLines(@"C:\Users\nazli\Documents\GitHub\PAMOCA\Fichiers 3D\demoWaving_4_Take_001.bvh");
+            String[] file = System.IO.File.ReadAllLines(@"C:\Users\nazli\Documents\GitHub\PAMOCA\Fichiers 3D\Waving_1_mixamo.com.bvh");
 
             return file;
         }

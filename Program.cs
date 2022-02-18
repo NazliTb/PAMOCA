@@ -37,8 +37,8 @@ namespace PAMOCA
                 if (line.Contains("Frame Time:"))
                 {
                     String[] framesLine = line.Split('\t');
-                    motion.setFrameTime(float.Parse(framesLine[1], CultureInfo.InvariantCulture.NumberFormat));
-                    //motion.setFrameTime(0.1f);
+                    //motion.setFrameTime(float.Parse(framesLine[1], CultureInfo.InvariantCulture.NumberFormat));
+                    motion.setFrameTime(1);
                 }
             }
 
